@@ -40,4 +40,100 @@
 즉 로직이 주체가 된다  
 합성 제약은 없고, 로직의 목적을 기반으로 응집성을 찾는다
 
-딱히 없을 경우 그냥 계층을 주지 않고 기능으로 정의한다
+# 응됩된 기능 내에서 파일 분할 하는 방법
+
+## ui
+
+action , view, widget , logic, eventMap(registry) ,hook , model 로 전체 구성을 정의함
+
+action은 모델에 엮인 로직
+eventMap(registry)은 view에 트리거를 붙이기 위해 사용하는 요소 분할하는 역할
+view 는 순수 view의 형태로 정의
+
+widget은 훅과 기타 등으로
+
+## function
+
+ui 요소를 뺀 로직은 view, widget, eventMap(registry) , hook 을 제외한
+model, logic, action
+
+# 확장 방법
+
+common → global → services → shared → domain → feature → pages(routes)
+
+## common
+
+다른 코드에서도 사용가능한 유틸들의 모음
+
+## global
+
+전역에서 사용 가능하고
+프로젝트에 연관되어 커스텀되는 코드 들의 모음
+
+- theme
+- constant
+- auth
+- i18n
+- policies
+  - 법이나 정책, 세금 등의 값들의 설정 값, 정책적인 기준 정의
+
+## services
+
+(외부 서비스 통합)
+api, database 같은 외부 서비스를 내부 로직과 결합하기 위한 레이어
+외부 스펙과 프로젝트 내 에러와 로깅에 대한 통합을 구현
+
+- /http
+  - client.ts # HTTP 클라이언트
+  - interceptors.ts # 요청/응답 인터셉터
+  - type.ts # 해당 api의 타입
+  - index.ts
+- /jsonPlaceholder
+  - client.ts # HTTP 클라이언트
+  - interceptors.ts # 요청/응답 인터셉터
+  - openapi.ts # 요청/응답 스펙 타입
+  - type.ts # 내부 타입
+  - action.ts # 몇가지 실행 가능한 액션들
+  - constants.ts
+  - index.ts # public
+
+## shared
+
+global과 비슷한데 프로젝트 내 공유 자원의 개념
+상위 레이어와 결합할 수 있음
+
+- ...category/
+  - component
+  - hook
+  - types
+
+## domain
+
+비즈니스 도메인 기반, services 의 세부 타입들이 사용될 수도 있음
+도메인 기준으로 구현
+
+- user/
+  - component/ : 도메인 관련 ui 컴포넌트
+  - widget/ : 기능이 엮인 컴포넌트
+    - hooks : 내부에서 action과 store 들을 연결함
+    - action : 트리거를 표준화 함
+  - store/ : context api 또는 store 객체
+  - types/ : 도메인의 타입
+  - utils/ : validation , helpers,
+  - dto/ : 다른 도메인 데이터 또는 서비스 타입을 연결하는 인터페이스
+  - docs/ : domain 에 대한 문서
+
+## feature
+
+기능 플래그, A/B 테스트, 태스크 정의, 분석 등 기능 관리
+일단 이슈 단위로 정의하거나 실험적인 기능들, 개발 중인 것을 폴더 분할해서 작업
+
+## ui
+
+기능들과 도메인을 결합해서 page 로 정의한 것
+경로에 대한 종속성 없이 페이지에 대한 정의
+
+## pages , app, routes 중 하나
+
+경로 라우팅 하는 레이어로 최종 아웃풋으로 정의할 수 있다
+mobile, window resize, route params , metadata , ceo, server request, user agent, browser 이벤트에 대한 관리를 주로 함
