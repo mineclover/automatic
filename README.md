@@ -1,31 +1,34 @@
+# 전체 구조
+
 - public/
   - {version}/
     - object/ : svg asset
     - img/ : image asset
     - asset.svg : sysbol icon
 - src/
+
   - app/
     - ...pages/ : folder base routing
       - root.tsx
       - page.tsx
       - layout.tsx
     - feature/ : feature 개발을 테스트하기 위한 공간, feature 와 이름을 같게해서 사용하는 것이 컨벤션
+  - common/
+    - [...category domain](#category%20domain)/ : 종속성이 순수한 애들 > dom , browser , library , utils
   - design/ : design System
     - {version}/
       - ...token.scss
       - asset.tsx
   - feature/ : 요구 사항 기반의 개발 (task) > feature flag 가 존재하는 것은 해당 위치에 유지하고 그렇지 않은 것은 서비스로 병합
   - global/
-  - api/ : 다양한 api 에 대한 스펙 타입 관리와 에러 처리 방식 표준화
-  - domain/: 도메인이 확실한 것들의 정의 , 확실하게 만들어서 붙이기
-  - service/
-    - 비즈니스 로직 붙은 프로덕트 서비스들 프론트[주체에 의한 정의 (채택)](<#주체에%20의한%20정의%20(채택)>)
-  - common/
-    - [...category domain](#category%20domain)/ : 종속성이 순수한 애들 > dom , browser , library , utils
-  - system/
     - logger
     - error 수집기
     - i18n
+  - domain/: 도메인이 확실한 것들의 정의 , 확실하게 만들어서 붙이기
+  - services/
+    - 다양한 api 에 대한 스펙 타입 관리와 에러 처리 방식 표준화
+    - 비즈니스 로직 붙은 프로덕트 서비스들 프론트[주체에 의한 정의 (채택)](<#주체에%20의한%20정의%20(채택)>)
+
 - scripts/: 배포/빌드/유틸 스크립트
 - tests/: 테스트 코드 설정 파일
 - docs/: 문서
@@ -42,24 +45,47 @@
 
 # 응됩된 기능 내에서 파일 분할 하는 방법
 
-## ui
+## ui 구성 방법
 
-action , view, widget , logic, eventMap(registry) ,hook , model 로 전체 구성을 정의함
+action , view, widget , logic, eventMap(registry), hook , model 로 전체 구성을 정의함
 
-action은 모델에 엮인 로직
+action은 view를 제어하기 위한 로직으로 view state를 제어하는 action에 대한 정의임
+
+- view State 는 따로 정의 해야 함
+  view가 변경되는 패턴을 몇가지 상태로 표준화 하고 그 상태 값을 기반으로 view를 변환함
+- 이는 피그마의 디자인 패턴과 비슷한 방식으로 관리되는 view state임
+- 특정 입력 값을 기반으로 action를 통해 view State를 반환함
+- view 는 view state에 의해 시각적 요소가 제어 됨
+
 eventMap(registry)은 view에 트리거를 붙이기 위해 사용하는 요소 분할하는 역할
-view 는 순수 view의 형태로 정의
 
-widget은 훅과 기타 등으로
+- onClick , onBlur 등에 어떤 action을 넣을 것인가
+- 어떤 요소에 어떤 이벤트들을 넣을 것인가에 대한 결정
+  view 는 순수 view의 형태로 정의
+
+hook 은 model, action, logic 등을 연계해서 만들어짐
+
+widget은 훅과 기타 등등으로 구성함
+
+logic은 action은 아니지만 model이나 기타 연산이 되는 로직임
+model은 store 나 context api, entity 같은 데이터 원천과 이를 위한 dto로 구성됨
+
+### view state
+
+view 자체를 고유한 컴포넌트 개념으로 구현
+내부에는 컨텐츠들이 있고 view variant가 있음
+view variant와 컨텐츠는 서로 분리되어 있어야 함
+
+컨텐츠에 따라 view variant가 직접적으로 변경되는 것은 그 데이터에 의한 종속성이 심하기 때문에 분리해서 관리함
 
 ## function
 
-ui 요소를 뺀 로직은 view, widget, eventMap(registry) , hook 을 제외한
-model, logic, action
+ui 요소를 뺀 로직은 view, widget, eventMap(registry) , hook , action을 제외한
+model, logic,
 
 # 확장 방법
 
-common → global → services → shared → domain → feature → pages(routes)
+common ← global ← services ← shared ← domain ← feature ← ui ← pages(routes)
 
 ## common
 
@@ -137,3 +163,8 @@ global과 비슷한데 프로젝트 내 공유 자원의 개념
 
 경로 라우팅 하는 레이어로 최종 아웃풋으로 정의할 수 있다
 mobile, window resize, route params , metadata , ceo, server request, user agent, browser 이벤트에 대한 관리를 주로 함
+
+# 결합 방식
+
+의존성 방향을 지켜서 개발
+같은 소속 끼리는 의존성 허용
